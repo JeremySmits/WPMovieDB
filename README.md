@@ -1,2 +1,2 @@
 # WPMovieDB
-Wordpress website made to communicate with "themoviedb"
+Wordpress website made to communicate with "themoviedb".
