@@ -33,12 +33,7 @@ function movie_init() {
         'menu_icon' => 'dashicons-video-alt3',
         'supports' => array(
             'title',
-            'custom-fields',
-            'comments',
-            'revisions',
-            'thumbnail',
-            'author',
-            'page-attributes'
+            'custom-fields'
         )
     );
 

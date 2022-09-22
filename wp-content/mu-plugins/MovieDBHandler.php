@@ -3,6 +3,8 @@
 add_action('wp_ajax_nopriv_get_movies_from_api', 'get_movies_from_api');
 add_action('wp_ajax_get_movies_from_api', 'get_movies_from_api');
 
+wp_schedule_event(time(),'hourly', 'get_movies_from_api');
+
 function get_movies_from_api(){
 
     $file = get_stylesheet_directory() . '/report.txt';
@@ -33,12 +35,25 @@ function get_movies_from_api(){
         foreach($result as $Movie){
             file_put_contents($file, "New: " . $Movie['title'] . "\n\n", FILE_APPEND);
 
-              $insert_movie = wp_insert_post([
+            $my_post = array(
                 'post_name' => $Movie['title'],
                 'post_title' => $Movie['title'],
                 'post_type' => 'Movie',
-                'post_status' => 'publish'
-            ]);
+                'post_status' => 'publish',
+           
+               'meta_input' => array(
+                 'overview' => $Movie['overview'],
+                 'id' => $Movie['id'],
+                 'original_title' => $Movie['original_title'],
+                 'popularity' => $Movie['popularity'],
+                 'release_date' => $Movie['release_date'],
+                 'vote_average' => $Movie['vote_average'],
+                 'vote_count' => $Movie['vote_count'],
+                 'original_language' => $Movie['original_language'],
+                 'poster_path' => 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' . $Movie['poster_path']
+               )
+             );
+             wp_insert_post( $my_post );
         } 
     }
 
