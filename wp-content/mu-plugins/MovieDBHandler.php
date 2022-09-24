@@ -3,8 +3,6 @@
 add_action('wp_ajax_nopriv_get_movies_from_api', 'get_movies_from_api');
 add_action('wp_ajax_get_movies_from_api', 'get_movies_from_api');
 
-wp_schedule_event(time(),'hourly', 'get_movies_from_api');
-
 function get_movies_from_api(){
 
     $file = get_stylesheet_directory() . '/report.txt';
@@ -65,4 +63,11 @@ function get_movies_from_api(){
             'current_page' => $current_page
         ]
     ]);
+    
 }
+
+$args = array( false );
+if ( ! wp_next_scheduled( 'prefixhourlyevent', $args ) ) {
+    wp_schedule_event( time(), 'hourly', 'prefixhourlyevent', $args );
+}
+add_action( 'prefixhourlyevent', 'get_movies_from_api' );
