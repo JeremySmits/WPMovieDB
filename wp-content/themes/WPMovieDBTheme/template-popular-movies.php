@@ -10,7 +10,7 @@ Template Name: Popular Movies
 
 <body>
     
-<main class="container">
+<main class="container pt-3">
 
 
 <?php
@@ -18,7 +18,7 @@ Template Name: Popular Movies
 $args = array( 'posts_per_page' => 6,
 'paged' => $paged,
 'post_type' => 'Movie',
-'orderby' => 'publish_date',
+'orderby' => 'title',
 'order' => 'ASC'
 );
 
@@ -31,7 +31,7 @@ $args = array( 'posts_per_page' => 6,
         <div >
             <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                 <div class="col p-4 d-flex flex-column position-static">
-                <strong class="d-inline-block mb-2 text-primary">World</strong>
+                <strong class="d-inline-block mb-2 text-primary">No genres</strong>
                 <h3>
                     <a href="<?php the_permalink() ?>"><?php the_title();?></a>
                 </h3>

@@ -5,7 +5,6 @@ add_action('wp_ajax_get_movies_from_api', 'get_movies_from_api');
 
 function get_movies_from_api(){
 
-    $file = get_stylesheet_directory() . '/report.txt';
     $current_page = (! empty($_POST['current_page'])) ? $_POST['current_page'] : 1;
     $movies = [];
 
@@ -19,8 +18,6 @@ function get_movies_from_api(){
 
     $results = wp_remote_retrieve_body(wp_remote_get('https://api.themoviedb.org/3/movie/popular?api_key=624e5443542c015afd10b54caf716fcb&language=en-US&page=' . $current_page));
 
-    file_put_contents($file, "OLD: " . $results. "\n\n", FILE_APPEND);
-
     $results = json_decode( preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $results), true );
 
     if(! is_array($results) || empty($results) || $current_page == 4){
@@ -31,7 +28,6 @@ function get_movies_from_api(){
 
     foreach($Movies[0] as $result){
         foreach($result as $Movie){
-            file_put_contents($file, "New: " . $Movie['title'] . "\n\n", FILE_APPEND);
 
             $my_post = array(
                 'post_name' => $Movie['title'],
@@ -56,6 +52,7 @@ function get_movies_from_api(){
     }
 
     $current_page = $current_page + 1;
+
     wp_remote_post(admin_url('admin-ajax.php?action=get_movies_from_api'),[
         'blocking' => false,
         'sslverify' => false,
