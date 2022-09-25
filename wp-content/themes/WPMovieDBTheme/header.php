@@ -17,6 +17,9 @@
       </li>
     </ul>
   </div>
+      <input id="txt" name="order" type="text">
+      <input id='btn' type="submit" value="Search movie"
+      onclick="location.href=document.getElementById('txt').value" >
 </nav>
 <div class="pb-3"></div>
 </body>
