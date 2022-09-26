@@ -49,12 +49,16 @@ else{
 
     if ( $postslist->have_posts() ) :
         while ( $postslist->have_posts() ) : $postslist->the_post(); 
-
-        ?>
+            ?>
         <div >
             <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                 <div class="col p-4 d-flex flex-column position-static">
-                <strong class="d-inline-block mb-2 text-primary">No genres</strong>
+                <strong class="d-inline-block mb-2 text-primary">
+                <?php
+                foreach (get_the_terms(get_the_ID(), 'movie_category') as $cat) {
+                    ?><?php echo $cat->name . ' '?><?php
+                }?>
+                </strong>
                 <h3>
                     <a href="<?php the_permalink() ?>"><?php the_title();?></a>
                 </h3>

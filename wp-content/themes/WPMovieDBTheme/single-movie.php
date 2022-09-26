@@ -3,10 +3,15 @@
 <div >
     <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
             <div class="col p-4 d-flex flex-column position-static">
-                <strong class="d-inline-block mb-2 text-primary">World</strong>
+                <h5>
+                <?php
+                    foreach (get_the_terms(get_the_ID(), 'movie_category') as $cat) {
+                        ?><?php echo $cat->name . ' '?><?php
+                    }?>
+                </strong>
                     <h1>
                         <a href="<?php the_permalink() ?>"><?php the_title();?></a>
-                    </h1>
+                </h5>
                 <div class="mb-1 text-muted">Release date: <?php echo get_post_meta($post->ID, 'release_date', TRUE) ?></div>
                 <h5 class="card-text mb-auto"><?php echo get_post_meta($post->ID, 'overview', TRUE) ?></h5>
                 <h5 class="card-text mb-auto">Original language: <?php echo get_post_meta($post->ID, 'original_language', TRUE) ?></h5>
