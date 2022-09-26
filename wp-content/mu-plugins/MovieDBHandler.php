@@ -27,14 +27,24 @@ function get_movies_from_api(){
     $Movies[] = $results;
 
     foreach($Movies[0] as $result){
+        $counter = 0;
         foreach($result as $Movie){
+
 
             $my_post = array(
                 'post_name' => $Movie['title'],
                 'post_title' => $Movie['title'],
                 'post_type' => 'Movie',
                 'post_status' => 'publish',
-           
+
+                'tax_input' => array(
+                    'movie_category' =>  array(
+                        'Red',
+                        'Green',
+                        'Blue'
+                    )
+                ),
+                             
                'meta_input' => array(
                  'overview' => $Movie['overview'],
                  'id' => $Movie['id'],
@@ -47,7 +57,16 @@ function get_movies_from_api(){
                  'poster_path' => 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' . $Movie['poster_path']
                )
              );
-             wp_insert_post( $my_post );
+
+             if($current_page != 3){
+                $pid = wp_insert_post( $my_post );
+                wp_set_object_terms($pid, 0, 'movie_category', true);
+             }
+             elseif($counter < 10 ){
+                $pid = wp_insert_post( $my_post );
+                wp_set_object_terms($pid, 0, 'movie_category', true);
+             }
+             $counter = $counter +1;
         } 
     }
 
@@ -63,8 +82,7 @@ function get_movies_from_api(){
     
 }
 
-$args = array( false );
-if ( ! wp_next_scheduled( 'prefixhourlyevent', $args ) ) {
-    wp_schedule_event( time(), 'hourly', 'prefixhourlyevent', $args );
+if ( ! wp_next_scheduled( 'prefixhourlyevent' ) ) {
+    wp_schedule_event( time(), 'hourly', 'prefixhourlyevent');
 }
 add_action( 'prefixhourlyevent', 'get_movies_from_api' );

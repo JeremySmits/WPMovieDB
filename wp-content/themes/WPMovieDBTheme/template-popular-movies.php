@@ -15,7 +15,7 @@ Template Name: Popular Movies
 
 <?php
 
-$args = array( 'posts_per_page' => 6,
+$args = array( 'posts_per_page' => 5,
 'paged' => $paged,
 'post_type' => 'Movie',
 'orderby' => 'title',
