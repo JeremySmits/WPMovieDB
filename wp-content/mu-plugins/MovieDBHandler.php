@@ -6,7 +6,6 @@ add_action('wp_ajax_get_movies_from_api', 'get_movies_from_api');
 function get_movies_from_api(){
 
     $current_page = (! empty($_POST['current_page'])) ? $_POST['current_page'] : 1;
-    $movies = [];
 
     if($current_page == 1)
     {
@@ -26,9 +25,37 @@ function get_movies_from_api(){
 
     $Movies[] = $results;
 
+    $moviegenres = array(
+        '28' => 'Action',
+        '12'=> 'Adventure',
+        '16'=>'Animation',
+        '35'=>'Comedy',
+        '80'=>'Crime',
+        '99'=>'Documentary',
+        '18'=>'Drama',
+        '10751'=>'Family',
+        '14'=>'Fantasy',
+        '36'=>'History',
+        '27'=>'Horror',
+        '10402'=>'Music',
+        '9648'=>'Mystery',
+        '10749'=>'Romance',
+        '878'=>'Science Fiction',
+        '10770'=>'TV Movie',
+        '53'=>'Thriller',
+        '10752' =>'War',
+        '37' =>'Western'
+    );
+
     foreach($Movies[0] as $result){
         $counter = 0;
+
         foreach($result as $Movie){
+            $Genre = array();
+
+            for ($x = 0; $x <= count($Movie['genre_ids']); $x++) {
+                array_push($Genre, $moviegenres[$Movie['genre_ids'][$x]]);
+            } 
 
 
             $my_post = array(
@@ -36,14 +63,6 @@ function get_movies_from_api(){
                 'post_title' => $Movie['title'],
                 'post_type' => 'Movie',
                 'post_status' => 'publish',
-
-                'tax_input' => array(
-                    'movie_category' =>  array(
-                        'Red',
-                        'Green',
-                        'Blue'
-                    )
-                ),
                              
                'meta_input' => array(
                  'overview' => $Movie['overview'],
@@ -59,12 +78,12 @@ function get_movies_from_api(){
              );
 
              if($current_page != 3){
-                $pid = wp_insert_post( $my_post );
-                wp_set_object_terms($pid, 0, 'movie_category', true);
+                $post_id = wp_insert_post( $my_post );
+                wp_set_object_terms($post_id, $Genre, 'movie_category');
              }
              elseif($counter < 10 ){
-                $pid = wp_insert_post( $my_post );
-                wp_set_object_terms($pid, 0, 'movie_category', true);
+                $post_id = wp_insert_post( $my_post );
+                wp_set_object_terms($post_id, $Genre, 'movie_category');
              }
              $counter = $counter +1;
         } 
@@ -82,7 +101,7 @@ function get_movies_from_api(){
     
 }
 
-if ( ! wp_next_scheduled( 'prefixhourlyevent' ) ) {
-    wp_schedule_event( time(), 'hourly', 'prefixhourlyevent');
-}
-add_action( 'prefixhourlyevent', 'get_movies_from_api' );
+// if ( ! wp_next_scheduled( 'prefixhourlyevent' ) ) {
+//     wp_schedule_event( time(), 'hourly', 'prefixhourlyevent');
+// }
+// add_action( 'prefixhourlyevent', 'get_movies_from_api' );

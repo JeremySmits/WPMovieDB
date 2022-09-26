@@ -16,7 +16,10 @@
   <div class="collapse navbar-collapse" id="navbarText">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-      <a class="nav-link" href="most-popular-movies">Popular Movies</a>
+      <a class="nav-link" href="/WPMovieDB/most-popular-movies">Popular Movies</a>
+      </li>
+      <li class="nav-item active">
+      <a class="nav-link" href="/WPMovieDB/genre-page">Genres</a>
       </li>
     </ul>
     <div class="form-inline my-2 my-lg-0">

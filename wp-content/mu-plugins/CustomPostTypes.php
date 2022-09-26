@@ -34,7 +34,7 @@ function movie_init() {
         'supports' => array(
             'title',
             'custom-fields'
-        )
+        ),
     );
 
 	

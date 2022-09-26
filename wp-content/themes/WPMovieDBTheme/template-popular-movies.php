@@ -15,12 +15,35 @@ Template Name: Popular Movies
 
 <?php
 
-$args = array( 'posts_per_page' => 5,
-'paged' => $paged,
-'post_type' => 'Movie',
-'orderby' => 'title',
-'order' => 'ASC'
-);
+$category_var = (get_query_var('category')) ? get_query_var('category') : false;
+
+
+
+if($category_var){
+    $args = array( 'posts_per_page' => 5,
+    'paged' => $paged,
+    'post_type' => 'Movie',
+    'orderby' => 'title',
+    'order' => 'ASC',
+    'tax_query' => array(             
+            array(
+            'taxonomy' => 'movie_category',
+            'field' => 'slug',
+            'terms' => $category_var, //
+        )
+     )
+    );
+}
+else{
+    $args = array( 'posts_per_page' => 5,
+    'paged' => $paged,
+    'post_type' => 'Movie',
+    'orderby' => 'title',
+    'order' => 'ASC',
+    );
+}
+
+
 
     $postslist = new WP_Query( $args );
 
@@ -59,7 +82,7 @@ $args = array( 'posts_per_page' => 5,
        
            ?> <h4><?php 
            echo paginate_links(array(
-               'base' => get_pagenum_link(1).
+               'base' => get_site_url() . '/most-popular-movies/'.
                '%_%',
                //'format' => '/page/%#%',
                'current' => $current_page,
