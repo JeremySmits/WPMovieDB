@@ -3,10 +3,34 @@
 if (!defined('ABSPATH')) die('Access denied.');
 
 class Simba_Two_Factor_Authentication {
-	
+
+	/**
+	 * Simba 2FA frontend object
+	 *
+	 * @var Object
+	 */
 	protected $frontend;
-	
+
+	/**
+	 * Simba 2FA totp object
+	 *
+	 * @var Object
+	 */
 	protected $totp_controller;
+	
+	/**
+	 * Flag for prevent PHP notices in AJAX
+	 *
+	 * @var Boolean
+	 */
+	private $output_buffering;
+	
+	/**
+	 * Logged error lines array
+	 *
+	 * @var Array
+	 */
+	private $logged;
 
 	/**
 	 * URL slug for the plugin's option page
@@ -766,7 +790,7 @@ class Simba_Two_Factor_Authentication {
 	}
 
 	/**
-	 * Here's where the login action happens. Called on the WP 'authenticate' action.
+	 * Here's where the login action happens. Called on the WP 'authenticate' action (which also happens when wp-login.php loads, so parameters need checking).
 	 *
 	 * @param WP_Error|WP_User $user
 	 * @param String		   $username - this is not necessarily the WP username; it is whatever was typed in the form, so can be an email address
@@ -775,7 +799,7 @@ class Simba_Two_Factor_Authentication {
 	 * @return WP_Error|WP_User
 	 */
 	public function tfaVerifyCodeAndUser($user, $username, $password) {
-		// When both AIOWPS and Two Factor Authentication plugins are active, this function called more than once, To prevent it, this code is written.
+		// When both the AIOWPS and Two Factor Authentication plugins are active, this function is called more than once; that should be short-circuited.
 		if (isset(self::$is_authenticated[$this->authentication_slug]) && self::$is_authenticated[$this->authentication_slug]) {
 			return $user;
 		}
@@ -816,7 +840,7 @@ class Simba_Two_Factor_Authentication {
 			if (is_wp_error($code_ok)) {
 				$ret = $code_ok;
 			} elseif (!$code_ok) {
-				$ret =  new WP_Error('authentication_failed', '<strong>'.__('Error:', 'two-factor-authentication').'</strong> '.__('The one-time password (TFA code) you entered was incorrect.', 'two-factor-authentication'));
+				$ret =  new WP_Error('authentication_failed', '<strong>'.__('Error:', 'two-factor-authentication').'</strong> '.apply_filters('simba_tfa_message_code_incorrect', __('The one-time password (TFA code) you entered was incorrect.', 'two-factor-authentication')));
 			} elseif ($user) {
 				$ret = $user;
 			} else {
@@ -843,7 +867,8 @@ class Simba_Two_Factor_Authentication {
 
 		// If the TFA code was actually validated (not just not required, for example), then $code_ok is (boolean)true
 		if (isset($code_ok) && true === $code_ok && is_a($ret, 'WP_User')) {
-			if (!empty($params['simba_tfa_mark_as_trusted']) && $this->user_can_trust($ret->ID) && (is_ssl() || (!empty($_SERVER['SERVER_NAME']) && ('localhost' == $_SERVER['SERVER_NAME'] ||'127.0.0.1' == $_SERVER['SERVER_NAME'])))) {
+			// Though $_SERVER['SERVER_NAME'] can't always be trusted (if the webserver is misconfigured), anyone using this already has password and TFA clearance.
+			if (!empty($params['simba_tfa_mark_as_trusted']) && $this->user_can_trust($ret->ID) && (is_ssl() || (!empty($_SERVER['SERVER_NAME']) && ('localhost' == $_SERVER['SERVER_NAME'] ||'127.0.0.1' == $_SERVER['SERVER_NAME'] || preg_match('/\.localdomain$/', $_SERVER['SERVER_NAME']))))) {
 
 				$trusted_for = $this->get_option('tfa_trusted_for');
 				$trusted_for = (false === $trusted_for) ? 30 : (string) absint($trusted_for);
@@ -1147,6 +1172,9 @@ class Simba_Two_Factor_Authentication {
 	 * Called not only upon the WP action login_enqueue_scripts, but potentially upon the action 'init' and various others from other plugins too. It can handle being called multiple times.
 	 */
 	public function login_enqueue_scripts() {
+		if (!$this->should_enqueue_login_scripts()) {
+			return;
+		}
 
 		if (isset($_GET['action']) && 'logout ' != $_GET['action'] && 'login' != $_GET['action']) return;
 
@@ -1154,7 +1182,7 @@ class Simba_Two_Factor_Authentication {
 		if ($already_done) return;
 		$already_done = true;
 
-		// Prevent cacheing when in debug mode
+		// Prevent caching when in debug mode
 		$script_ver = (defined('WP_DEBUG') && WP_DEBUG) ? time() : filemtime($this->includes_dir().'/tfa.js');
 
 		wp_enqueue_script('tfa-ajax-request', $this->includes_url().'/tfa.js', array('jquery'), $script_ver);
@@ -1169,10 +1197,11 @@ class Simba_Two_Factor_Authentication {
 			'otp' => __('One Time Password (i.e. 2FA)', 'two-factor-authentication'),
 			'otp_login_help' => __('(check your OTP app to get this password)', 'two-factor-authentication'),
 			'mark_as_trusted' => sprintf(_n('Trust this device (allow login without 2FA for %d day)', 'Trust this device (allow login without TFA for %d days)', $trusted_for, 'two-factor-authentication'), $trusted_for),
-			'is_trusted' => __('(Trusted device)', 'two-factor-authentication'),
+			'is_trusted' => __('(Trusted device - no OTP code required)', 'two-factor-authentication'),
 			'nonce' => wp_create_nonce('simba_tfa_loginform_nonce'),
 			'login_form_selectors' => '',
 			'login_form_off_selectors' => '',
+			'error' => __('An error has occurred. Site owners can check the JavaScript console for more details.', 'two-factor-authentication'),
 		);
 
 		// Spinner exists since WC 3.8. Use the proper functions to avoid SSL warnings.
@@ -1187,6 +1216,31 @@ class Simba_Two_Factor_Authentication {
 		wp_localize_script('tfa-ajax-request', 'simba_tfasettings', $localize);
 
 	}
+
+	/**
+	 * Check whether TFA login scripts should be enqueued or not.
+	 *
+	 * @return boolean True if the TFA login script should be enqueued, otherwise false.
+	 */
+	private function should_enqueue_login_scripts() {
+		if (defined('TWO_FACTOR_DISABLE') && TWO_FACTOR_DISABLE) {
+			return apply_filters('simbatfa_enqueue_login_scripts', false);
+		}
+
+		global $wpdb;
+		$sql = $wpdb->prepare('SELECT COUNT(user_id) FROM ' . $wpdb->usermeta . ' WHERE meta_key = %s AND meta_value = %d LIMIT 1', 'tfa_enable_tfa', 1);
+		$count_user_id = $wpdb->get_var($sql);
+
+		if (is_null($count_user_id)) { // Error in query.
+			return apply_filters('simbatfa_enqueue_login_scripts', true);
+		} elseif ($count_user_id > 0) { // A user exists with TFA enabled.
+			return apply_filters('simbatfa_enqueue_login_scripts', true);
+		}
+
+		// No user exists with TFA enabled.
+		return apply_filters('simbatfa_enqueue_login_scripts', false);
+	}
+
 
 	/**
 	 * Return or output view content

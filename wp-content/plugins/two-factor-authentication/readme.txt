@@ -2,7 +2,7 @@
 Tags: two factor, 2fa, tfa, two factor auth, google authenticator
 Requires at least: 3.4
 Tested up to: 6.0
-Stable tag: 1.14.5
+Stable tag: 1.14.7
 Requires PHP: 5.6
 Author: DavidAnderson
 Contributors: DavidAnderson, DNutbourne
@@ -155,6 +155,23 @@ Note that the two factor authentication plugin has no mechanism to compare or ap
 13. Allowing users to have trusted devices (Premium version)
 
 == Changelog ==
+
+= 1.14.7 - 28/Sep/2022 =
+
+* TWEAK: Dynamic (non-explicitly declared) properties are deprecated as of PHP 8.2
+* TWEAK: Update bundled Select2 4.0 version to current release
+* TWEAK: Move JavaScript for administering other users into its own file, for better CSP compatibility
+* TWEAK: When a device is already trusted, show this information as plain text, not in the TFA field
+* TWEAK: When the TFA input field is shown, hide error messages from previous logins
+* TWEAK: If the AJAX call to check on OTP status fails, show a user-visible message
+* TWEAK: Add .localdomain hostnames to those permitted to have trusted devices
+* TWEAK: Relabel "Get codes" button
+* TWEAK: Add some filters allowing easier customisation of messages displayed
+* TWEAK: Show only the base32 encoding of the private key (unless the shortcode explicitly specified otherwise), since for a long time now this is what all known apps accept
+
+= 1.14.6 - 02/Sep/2022 =
+
+* TWEAK: The TFA login script is loaded on the login script if a user has enabled the Two Factor Authentication feature.
 
 = 1.14.5 - 01/Sep/2022 =
 
@@ -753,4 +770,4 @@ Note that the two factor authentication plugin has no mechanism to compare or ap
 * User interface simplified/de-cluttered
 
 == Upgrade Notice ==
-* 1.14.5 : CSS class addition
+* 1.14.7 : Various tweaks for better user experience, compatibility in various edge cases and other scenarios. A recommended update for all.

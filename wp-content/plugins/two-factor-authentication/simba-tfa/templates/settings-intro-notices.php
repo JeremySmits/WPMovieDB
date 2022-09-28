@@ -1,7 +1,7 @@
 <p class="simba_tfa_personal_settings_notice simba_tfa_intro_notice">
 <?php
 
-echo __('These are your personal settings.', 'two-factor-authentication').' '.__('Nothing you change here will have any effect on other users.', 'two-factor-authentication');
+echo apply_filters('simba_tfa_message_personal_settings', __('These are your personal settings.', 'two-factor-authentication').' '.__('Nothing you change here will have any effect on other users.', 'two-factor-authentication'));
 
 if (is_multisite()) {
 	if (is_super_admin()) {

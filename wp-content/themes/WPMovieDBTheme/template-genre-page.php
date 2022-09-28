@@ -11,7 +11,7 @@ Template Name: Genre page
 <body>
 
 <?php $movieGenre = get_terms('movie_category', array('hide_empty' => 0, 'parent' =>0)); 
-   foreach($movieGenre as $movieGenre) : 
+   foreach($movieGenre as $movieGenre) {
    ?>
     <main class="container pt-3">
         <ul class="list-group">
@@ -21,9 +21,7 @@ Template Name: Genre page
         </ul>
     </main class="pb-5">
 
-<?php 
-   endforeach; 
-   ?>
+    <?php } ?>
 
 </body>
 <?php get_footer(); ?>

@@ -108,7 +108,7 @@ class Simba_TFA_Login_Form_Integrations {
 		if (is_wp_error($code_ok)) {
 			$login->add_error($code_ok->get_error_code, $code_ok->get_error_message());
 		} elseif (!$code_ok) {
-			$login->add_error('authentication_failed', __('Error:', 'two-factor-authentication').' '.__('The one-time password (TFA code) you entered was incorrect.', 'two-factor-authentication'));
+			$login->add_error('authentication_failed', __('Error:', 'two-factor-authentication').' '.apply_filters('simba_tfa_message_code_incorrect', __('The one-time password (TFA code) you entered was incorrect.', 'two-factor-authentication')));
 		}
 		
 	}
